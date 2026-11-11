@@ -11,19 +11,19 @@ export const metadata: Metadata = {
     title: "Apex Fitness | Global Enterprise Platform",
     description: "Apex Fitness Goals - Ultra-performance high-grade global training companion built to Silicon Valley standards.",
     robots: "index, follow",
-    alternates: { canonical: "https://vercel.app" },
+    alternates: { canonical: "https://apex-fitness-platform-beta.vercel.app/" },
     openGraph: {
         type: "website",
         title: "Apex Fitness | Global Enterprise Platform",
         description: "Apex Fitness Goals - Ultra-performance high-grade global training companion built to Silicon Valley standards.",
-        url: "https://vercel.app",
-        images: [{ url: "https://vercel.applogo.jpg", width: 1200, height: 630, type: "image/jpeg" }]
+        url: "https://apex-fitness-platform-beta.vercel.app/",
+        images: [{ url: "https://apex-fitness-platform-beta.vercel.applogo.jpg", width: 1200, height: 630, type: "image/jpeg" }]
     },
     twitter: {
         card: "summary_large_image",
         title: "Apex Fitness | Global Enterprise Platform",
         description: "Apex Fitness Goals - Ultra-performance high-grade global training companion built to Silicon Valley standards.",
-        images: ["https://vercel.applogo.jpg"],
+        images: ["https://apex-fitness-platform-beta.vercel.applogo.jpg"],
     }
 };
 
@@ -33,9 +33,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }):
         <ClerkProvider appearance={{ theme: dark }}>
             <html lang="en" dir="ltr" className="scroll-smooth bg-neutral-950 text-white antialiased">
                 <head>
-                    <link rel="preconnect" href="https://googleapis.com" />
-                    <link rel="preconnect" href="https://gstatic.com" crossOrigin="anonymous" />
-                    <link rel="dns-prefetch" href="https://vercel.app" />
+                    <link rel="preconnect" href="https://fonts.googleapis.com" />
+                    <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+                    <link rel="dns-prefetch" href="https://apex-fitness-platform-beta.vercel.app" />
                 </head>
                 <body className="min-h-screen flex flex-col overflow-x-hidden font-sans selection:bg-[#ecf542] selection:text-black">
                     <a href="#main-content" className="absolute top-[-100px] left-5 bg-[#ecf542] text-black p-4 font-bold z-50 transition-[top] duration-200 ease-out focus:top-5 outline-none">
