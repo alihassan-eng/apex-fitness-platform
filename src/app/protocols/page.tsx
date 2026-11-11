@@ -79,7 +79,8 @@ export default function ProtocolsPage(): React.JSX.Element {
                     ))}
                 </div>
 
-                <div className="pt-4">
+               <div className="pt-4 flex justify-center">
+
                     <Link href="/dashboard" className="inline-block bg-white text-black font-black text-[11px] uppercase tracking-widest px-8 py-3.5 rounded-lg">
                         Calculate Your Protocol ⚡
                     </Link>
