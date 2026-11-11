@@ -251,14 +251,26 @@ export default function EnterpriseDashboardConsole(): React.JSX.Element {
                                     <input id="weightInput" name="weight" type="number" step="0.1" value={userWeightInput} onChange={(e) => setUserWeightInput(e.target.value)} placeholder="e.g. 74.5" required className="w-full bg-neutral-950 border border-white/5 rounded-xl px-4 py-3 text-sm text-white font-mono outline-none focus:border-[#ecf542]/30" />
                                 </div>
                                 <div className="space-y-2">
-                                    <div className="flex items-center justify-between">
+                                                                      <div className="flex items-center justify-between">
                                         <label htmlFor="heightInput" className="block font-mono text-[10px] font-bold uppercase tracking-wider text-neutral-400">Height Value</label>
-                                        <select aria-label="Height Unit" id="unitSelect" name="unit" value={heightUnitSystem} onChange={(e) => setHeightUnitSystem(e.target.value as "cm" | "ft" | "in")} className="bg-neutral-900 border border-white/10 rounded px-2 py-0.5 font-mono text-[10px] text-[#ecf542] uppercase outline-none cursor-pointer">
-                                            <option value="cm">CM</option>
-                                            <option value="ft">FT</option>
-                                            <option value="in">IN</option>
-                                        </select>
+                                        <div className="flex items-center gap-1 bg-neutral-950 border border-white/10 rounded-lg p-0.5">
+                                            {(["cm", "ft", "in"] as const).map((unit) => (
+                                                <button
+                                                    key={unit}
+                                                    type="button"
+                                                    onClick={() => setHeightUnitSystem(unit)}
+                                                    className={`px-2 py-0.5 rounded-md font-mono text-[10px] font-bold uppercase transition-all cursor-pointer ${
+                                                        heightUnitSystem === unit
+                                                            ? "bg-[#ecf542] text-black"
+                                                            : "text-neutral-400 hover:text-white bg-transparent"
+                                                    }`}
+                                                >
+                                                    {unit}
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
+
                                     <input id="heightInput" name="height" type="number" step="0.01" value={userHeightInput} onChange={(e) => setUserHeightInput(e.target.value)} placeholder="e.g. 170" required className="w-full bg-neutral-950 border border-white/5 rounded-xl px-4 py-3 text-sm text-white font-mono outline-none focus:border-[#ecf542]/30" />
                                 </div>
                             </div>
