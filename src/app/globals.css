@@ -191,3 +191,8 @@ html.light .always-dark-modal p,
 html.light .always-dark-modal span {
   color: #ffffff !important;
 }
+/* لائٹ موڈ میں موبائل ہیمبرگر بٹن کی لائنوں کو سیاہ رنگ دینا */
+html.light button[aria-label="Mobile Menu"] {
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
