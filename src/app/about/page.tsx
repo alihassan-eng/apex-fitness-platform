@@ -36,7 +36,8 @@ export default function AboutPage(): React.JSX.Element {
                     </div>
                 </div>
 
-                <div className="pt-4">
+               <div className="pt-4 flex justify-center">
+
                     <Link href="/dashboard" className="inline-block bg-[#ecf542] text-black font-black text-[11px] uppercase tracking-widest px-8 py-3.5 rounded-lg">
                         Launch Athlete Console ⚡
                     </Link>
