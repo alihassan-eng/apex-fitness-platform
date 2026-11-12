@@ -10,18 +10,18 @@ export function Navbar(): React.JSX.Element {
     const { isLoaded, isSignedIn } = useUser();
     const [themeState, setThemeState] = useState<"dark" | "light">("dark");
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
-
+    const [isMounted, setIsMounted] = useState<boolean>(false);
     useEffect(() => {
-        const savedTheme = localStorage.getItem("apex-theme-state") as "dark" | "light" | null;
-        if (savedTheme === "light") {
-            window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+            setIsMounted(true);
+            const savedTheme = localStorage.getItem("apex-theme-state") as "dark" | "light" | null;
+            if (savedTheme === "light") {
                 setThemeState("light");
                 document.documentElement.classList.add("light");
                 document.body.classList.add("light-execution-path");
-            });
-        }
+            }
+        });
     }, []);
-
     const toggleThemeProtocol = (): void => {
         const nextTheme = themeState === "dark" ? "light" : "dark";
         setThemeState(nextTheme);
@@ -61,8 +61,8 @@ export function Navbar(): React.JSX.Element {
                                 key={link.href}
                                 href={link.href}
                                 className={`transition-all duration-150 py-1.5 px-2 rounded-md border-b-2 active:scale-95 active:bg-[#ecf542]/10 ${isActive
-                                        ? "text-[#ecf542] border-[#ecf542]"
-                                        : "text-neutral-400 border-transparent hover:text-white hover:bg-white/5"
+                                    ? "text-[#ecf542] border-[#ecf542]"
+                                    : "text-neutral-400 border-transparent hover:text-white hover:bg-white/5"
                                     }`}
                             >
                                 {link.name}
@@ -99,25 +99,25 @@ export function Navbar(): React.JSX.Element {
                         </div>
                     )}
 
+
+
+
                     <button
                         onClick={toggleThemeProtocol}
                         aria-label="Toggle Theme"
-                        className="p-2.5 rounded-lg bg-neutral-900 border border-white/10 text-neutral-300 hover:text-[#ecf542] active:scale-90 transition-all cursor-pointer"
+                        className="p-2.5 rounded-lg bg-neutral-900 border border-white/10 text-neutral-300 hover:text-[#ecf542] active:scale-90 transition-all cursor-pointer min-w-[38px] min-h-[38px] flex items-center justify-center"
                     >
-                        {themeState === "dark" ? (
-                            /* ڈارک موڈ میں چاند نظر آئے گا */
+                        {!isMounted ? null : themeState === "dark" ? (
                             <svg className="w-4 h-4 text-[#ecf542]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                             </svg>
                         ) : (
-                            /* لائٹ موڈ میں سورج نظر آئے گا */
                             <svg className="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M16.243 17.657l.707.707M6.343 6.343l.707.707M14.142 12a2.142 2.142 0 11-4.284 0 2.142 2.142 0 014.284 0z" />
                             </svg>
                         )}
-
                     </button>
-
+                                        {/* تھیم بٹن کے بالکل نیچے یہ موبائل ہیمبرگر بٹن لگا دیں */}
                     <button
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                         aria-label="Mobile Menu"
@@ -131,6 +131,8 @@ export function Navbar(): React.JSX.Element {
                             )}
                         </svg>
                     </button>
+
+
                 </div>
             </div>
             {isMobileMenuOpen && (
@@ -144,8 +146,8 @@ export function Navbar(): React.JSX.Element {
                                     href={link.href}
                                     onClick={() => setIsMobileMenuOpen(false)}
                                     className={`flex items-center justify-between py-3 px-4 rounded-xl transition-all duration-150 active:scale-95 active:bg-[#ecf542] active:text-black ${isActive
-                                            ? "bg-[#ecf542]/15 text-[#ecf542] border border-[#ecf542]/40"
-                                            : "text-neutral-300 hover:bg-white/5 border border-transparent"
+                                        ? "bg-[#ecf542]/15 text-[#ecf542] border border-[#ecf542]/40"
+                                        : "text-neutral-300 hover:bg-white/5 border border-transparent"
                                         }`}
                                 >
                                     <span>{link.name}</span>
