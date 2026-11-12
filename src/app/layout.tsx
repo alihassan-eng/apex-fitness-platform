@@ -1,7 +1,8 @@
 // ============================================================================
 // 🪐 APEX SaaS INFRASTRUCTURE - COMPLETE ROOT LAYOUT (src/app/layout.tsx)
 // ============================================================================
-
+import { Preloader } from "@/components/Preloader";
+        
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes"; 
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }):
                     </a>
                     <div id="main-content" className="flex-1 flex flex-col">
                         {children}
+                        <Preloader />
                     </div>
                 </body>
             </html>
