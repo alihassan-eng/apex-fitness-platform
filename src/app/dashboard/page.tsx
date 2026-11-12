@@ -24,7 +24,7 @@ export default function EnterpriseDashboardConsole(): React.JSX.Element {
     const [dailyCalories, setDailyCalories] = useState<number | null>(null);
     const [dailyProtein, setDailyProtein] = useState<number | null>(null);
     const [systemPerformanceStatus, setSystemPerformanceStatus] = useState<string>("SYSTEM OPERATIONAL");
-    
+
     const [historyRecords, setHistoryRecords] = useState<BmiRecord[]>([]);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editWeightValue, setEditWeightValue] = useState<string>("");
@@ -153,20 +153,170 @@ export default function EnterpriseDashboardConsole(): React.JSX.Element {
         }
     };
 
-    const exportCsvReport = (): void => {
+    const exportBrandedReport = (): void => {
         if (historyRecords.length === 0) return;
-        const headers = "Date,Weight(kg),Height(cm),BMI Score,Status\n";
-        const rows = historyRecords
-            .map((r) => `"${r.createdAt}",${r.weight},${r.heightCm},${r.bmiScore},"${r.status}"`)
-            .join("\n");
-        const blob = new Blob([headers + rows], { type: "text/csv" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "apex-fitness-report.csv";
-        a.click();
-        URL.revokeObjectURL(url);
+
+        const athleteName = isSignedIn && user ? `${user.firstName || ""} ${user.lastName || ""}`.trim() : "REGISTERED ATHLETE";
+        const athleteEmail = isSignedIn && user ? user.primaryEmailAddress?.emailAddress || "" : "";
+        const reportId = `APX-${Date.now().toString().slice(-6)}`;
+        const generatedDate = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+
+        // تازہ ترین ریکارڈ کے مطابق ڈائٹ پلان کا انتخاب
+        const latestRecord = historyRecords[0];
+        let dietFocus = "Balanced Maintenance Protocol";
+        const weeklyPlan = [
+            { day: "Monday", protein: "Eggs, Chicken Breast, Greek Yogurt", carbs: "Oats, Brown Rice, Banana", fats: "Almonds, Olive Oil" },
+            { day: "Tuesday", protein: "Grilled Fish, Lentils (Daal), Cottage Cheese", carbs: "Whole Wheat Roti, Sweet Potato", fats: "Walnuts, Flaxseeds" },
+            { day: "Wednesday", protein: "Lean Beef / Mutton, Boiled Eggs, Milk", carbs: "Quinoa / Rice, Apple, Chickpeas", fats: "Peanut Butter, Chia Seeds" },
+            { day: "Thursday", protein: "Chicken Tikka, Tuna / Fish, Yogurt", carbs: "Oatmeal, Whole Grain Bread, Berries", fats: "Avocado / Olive Oil, Cashews" },
+            { day: "Friday", protein: "Egg Whites, Grilled Chicken, Kidney Beans", carbs: "Basmati Rice, Dates, Mixed Vegetables", fats: "Pumpkin Seeds, Ghee (1 tsp)" },
+            { day: "Saturday", protein: "Fish Curry / Grilled Fish, Paneer / Tofu", carbs: "Whole Wheat Chapati, Sweet Corn", fats: "Almonds, Coconut" },
+            { day: "Sunday", protein: "Omelette, Roast Chicken, Protein Shake / Milk", carbs: "Oats Pancakes, Fruits, Steamed Veggies", fats: "Walnuts, Olive Oil" }
+        ];
+
+        if (latestRecord.bmiScore < 18.5) {
+            dietFocus = "High-Calorie Lean Mass Gain Protocol";
+        } else if (latestRecord.bmiScore >= 25) {
+            dietFocus = "High-Protein Caloric Deficit & Fat Loss Protocol";
+        }
+
+        const rowsHtml = historyRecords
+            .map(
+                (r, idx) => `
+                <tr>
+                    <td>0${idx + 1}</td>
+                    <td>${r.createdAt}</td>
+                    <td><strong>${r.weight} kg</strong></td>
+                    <td>${r.heightCm} cm</td>
+                    <td class="score">${r.bmiScore}</td>
+                    <td><span class="badge">${r.status}</span></td>
+                </tr>`
+            )
+            .join("");
+
+        // گراف کی پٹیاں بنانے کا کوڈ
+        const chartBarsHtml = historyRecords
+            .slice(0, 7)
+            .reverse()
+            .map((r) => {
+                const heightPct = Math.min(Math.max((r.bmiScore / 40) * 100, 15), 100);
+                return `
+                    <div class="bar-col">
+                        <span class="bar-val">${r.bmiScore}</span>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="height: ${heightPct}%;"></div>
+                        </div>
+                        <span class="bar-date">${r.createdAt}</span>
+                    </div>`;
+            })
+            .join("");
+
+        // 7 دن کے ڈائٹ پلان کی قطاریں
+        const dietRowsHtml = weeklyPlan
+            .map(
+                (d) => `
+                <tr>
+                    <td><strong>${d.day}</strong></td>
+                    <td>${d.protein}</td>
+                    <td>${d.carbs}</td>
+                    <td>${d.fats}</td>
+                </tr>`
+            )
+            .join("");
+
+        const reportWindow = window.open("", "_blank", "width=950,height=900");
+        if (!reportWindow) return;
+
+        reportWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>APEX.FIT - Official Biometric & Diet Report (${reportId})</title>
+                <style>
+                    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f1f5f9; color: #0f172a; padding: 25px; margin: 0; }
+                    .receipt { max-width: 820px; margin: auto; background: #ffffff; border: 2px solid #0f172a; border-radius: 16px; padding: 35px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
+                    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0f172a; padding-bottom: 18px; }
+                    .brand { font-size: 28px; font-weight: 900; letter-spacing: 3px; }
+                    .brand span { background: #0f172a; color: #ecf542; padding: 2px 8px; border-radius: 4px; }
+                    .meta { text-align: right; font-size: 12px; color: #475569; line-height: 1.6; }
+                    .athlete-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 14px 18px; margin: 20px 0; display: flex; justify-content: space-between; font-size: 13px; }
+                    h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; color: #0f172a; border-left: 4px solid #0f172a; padding-left: 10px; margin: 28px 0 12px 0; }
+                    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+                    th { background: #0f172a; color: #ffffff; text-align: left; padding: 10px; text-transform: uppercase; font-size: 10px; letter-spacing: 1px; }
+                    td { padding: 10px; border-bottom: 1px solid #e2e8f0; }
+                    .score { font-weight: 900; font-size: 14px; }
+                    .badge { background: #ecf542; color: #0f172a; font-weight: 800; font-size: 10px; padding: 3px 8px; border-radius: 6px; border: 1px solid #0f172a; }
+                    .chart-box { display: flex; align-items: flex-end; gap: 14px; height: 130px; padding: 20px 15px 10px 15px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; }
+                    .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+                    .bar-val { font-size: 11px; font-weight: 800; }
+                    .bar-track { width: 32px; height: 80px; background: #e2e8f0; border-radius: 6px 6px 0 0; display: flex; align-items: flex-end; overflow: hidden; }
+                    .bar-fill { width: 100%; background: #0f172a; border-top: 3px solid #16a34a; }
+                    .bar-date { font-size: 9px; color: #64748b; }
+                    .note { font-size: 10px; color: #64748b; margin-top: 12px; font-style: italic; }
+                    .footer-section { margin-top: 35px; display: flex; justify-content: space-between; align-items: flex-end; }
+                    .stamp { border: 3px double #16a34a; color: #16a34a; font-weight: 900; font-size: 12px; padding: 8px 16px; border-radius: 10px; text-transform: uppercase; letter-spacing: 2px; transform: rotate(-5deg); display: inline-block; background: rgba(22, 163, 74, 0.05); }
+                    .print-btn { background: #0f172a; color: #ecf542; border: none; padding: 12px 24px; font-weight: 800; font-size: 12px; border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
+                    @media print { .print-btn { display: none; } body { background: #ffffff; padding: 0; } .receipt { box-shadow: none; border: 2px solid #0f172a; } }
+                </style>
+            </head>
+            <body>
+                <div class="receipt">
+                    <div class="header">
+                        <div class="brand">APEX<span>.FIT</span></div>
+                        <div class="meta">
+                            <strong>OFFICIAL BIOMETRIC & NUTRITION REPORT</strong><br/>
+                            Receipt ID: <strong>${reportId}</strong> | Date: ${generatedDate}
+                        </div>
+                    </div>
+
+                    <div class="athlete-box">
+                        <div><strong>ATHLETE NAME:</strong> ${athleteName.toUpperCase()}</div>
+                        <div><strong>VERIFIED ID:</strong> ${athleteEmail}</div>
+                    </div>
+
+                    <h3>01. Biometric Telemetry History</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Date</th>
+                                <th>Weight</th>
+                                <th>Height</th>
+                                <th>BMI Score</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rowsHtml}</tbody>
+                    </table>
+
+                    <h3>02. Visual BMI Progression Chart</h3>
+                    <div class="chart-box">${chartBarsHtml}</div>
+
+                    <h3>03. 7-Day Nutrition Matrix (${dietFocus})</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Day</th>
+                                <th>Protein Sources</th>
+                                <th>Complex Carbs</th>
+                                <th>Healthy Fats</th>
+                            </tr>
+                        </thead>
+                        <tbody>${dietRowsHtml}</tbody>
+                    </table>
+                    <p class="note">* General nutritional guide based on computed BMI. Consult a certified nutritionist or physician for personalized medical dietary plans.</p>
+
+                    <div class="footer-section">
+                        <div class="stamp">✔ VERIFIED BY APEX.FIT<br/><span style="font-size:9px; letter-spacing:1px;">CLOUD TELEMETRY AUTHENTICATED</span></div>
+                        <button class="print-btn" onclick="window.print()">Download / Save PDF 🖨️</button>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `);
+        reportWindow.document.close();
     };
+
 
     const clearTelemetryBuffers = (): void => {
         setUserWeightInput("");
@@ -188,7 +338,7 @@ export default function EnterpriseDashboardConsole(): React.JSX.Element {
     }
     return (
         <div className="min-h-screen bg-neutral-950 text-white font-sans antialiased selection:bg-[#ecf542] selection:text-black flex flex-col justify-between overflow-x-hidden">
-            
+
             <header className="border-b border-white/5 bg-neutral-950/80 backdrop-blur-md sticky top-0 z-40">
                 <div className="mx-auto flex max-w-7xl h-16 items-center justify-between px-6">
                     <Link href="/" className="font-mono text-sm font-black tracking-widest text-white uppercase hover:text-[#ecf542] transition-colors">
@@ -215,7 +365,7 @@ export default function EnterpriseDashboardConsole(): React.JSX.Element {
 
             <main className="mx-auto max-w-7xl w-full px-6 py-12 flex-1 space-y-8">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                    
+
                     <div className="bg-neutral-900/40 border border-white/5 rounded-2xl p-6 space-y-6">
                         <div className="flex items-center justify-between border-b border-white/5 pb-4">
                             <h2 className="text-xs font-black tracking-widest uppercase text-[#ecf542]">Athlete Manifest</h2>
@@ -223,15 +373,15 @@ export default function EnterpriseDashboardConsole(): React.JSX.Element {
                         </div>
                         <div className="space-y-4 font-mono text-xs">
                             <div className="flex justify-between">
-                                <span className="text-neutral-500">NAME:</span> 
+                                <span className="text-neutral-500">NAME:</span>
                                 <span className="text-white font-bold uppercase">{isSignedIn && user ? `${user.firstName} ${user.lastName || ""}` : "GUEST"}</span>
                             </div>
                             <div className="flex justify-between">
-                                <span className="text-neutral-500">EMAIL:</span> 
+                                <span className="text-neutral-500">EMAIL:</span>
                                 <span className="text-white font-bold max-w-[150px] truncate">{isSignedIn && user ? user.primaryEmailAddress?.emailAddress : "NO MAIL"}</span>
                             </div>
                             <div className="flex justify-between">
-                                <span className="text-neutral-500">STATUS:</span> 
+                                <span className="text-neutral-500">STATUS:</span>
                                 <span className="text-neutral-400 truncate">{systemPerformanceStatus}</span>
                             </div>
                             <button onClick={() => setIsProfileModalOpen(true)} className="w-full mt-2 bg-neutral-900 hover:bg-neutral-800 border border-white/5 text-[#ecf542] text-[10px] font-black uppercase tracking-widest py-2.5 rounded-xl cursor-pointer">
@@ -251,7 +401,7 @@ export default function EnterpriseDashboardConsole(): React.JSX.Element {
                                     <input id="weightInput" name="weight" type="number" step="0.1" value={userWeightInput} onChange={(e) => setUserWeightInput(e.target.value)} placeholder="e.g. 74.5" required className="w-full bg-neutral-950 border border-white/5 rounded-xl px-4 py-3 text-sm text-white font-mono outline-none focus:border-[#ecf542]/30" />
                                 </div>
                                 <div className="space-y-2">
-                                                                      <div className="flex items-center justify-between">
+                                    <div className="flex items-center justify-between">
                                         <label htmlFor="heightInput" className="block font-mono text-[10px] font-bold uppercase tracking-wider text-neutral-400">Height Value</label>
                                         <div className="flex items-center gap-1 bg-neutral-950 border border-white/10 rounded-lg p-0.5">
                                             {(["cm", "ft", "in"] as const).map((unit) => (
@@ -259,11 +409,10 @@ export default function EnterpriseDashboardConsole(): React.JSX.Element {
                                                     key={unit}
                                                     type="button"
                                                     onClick={() => setHeightUnitSystem(unit)}
-                                                    className={`px-2 py-0.5 rounded-md font-mono text-[10px] font-bold uppercase transition-all cursor-pointer ${
-                                                        heightUnitSystem === unit
-                                                            ? "bg-[#ecf542] text-black"
-                                                            : "text-neutral-400 hover:text-white bg-transparent"
-                                                    }`}
+                                                    className={`px-2 py-0.5 rounded-md font-mono text-[10px] font-bold uppercase transition-all cursor-pointer ${heightUnitSystem === unit
+                                                        ? "bg-[#ecf542] text-black"
+                                                        : "text-neutral-400 hover:text-white bg-transparent"
+                                                        }`}
                                                 >
                                                     {unit}
                                                 </button>
@@ -311,7 +460,7 @@ export default function EnterpriseDashboardConsole(): React.JSX.Element {
                             <h2 className="text-xs font-black tracking-widest uppercase text-[#ecf542]">Metabolic Trend Visualizer</h2>
                             <span className="font-mono text-[10px] text-neutral-500">LAST {Math.min(historyRecords.length, 7)} LOGS</span>
                         </div>
-                        
+
                         <div className="flex items-end gap-3 h-36 pt-6 px-2">
                             {historyRecords.slice(0, 7).reverse().map((rec) => {
                                 const barHeight = Math.min(Math.max((rec.bmiScore / 40) * 100, 15), 100);
@@ -319,8 +468,8 @@ export default function EnterpriseDashboardConsole(): React.JSX.Element {
                                     <div key={rec.id} className="flex-1 flex flex-col items-center gap-2 group">
                                         <span className="font-mono text-[10px] text-white font-bold">{rec.bmiScore}</span>
                                         <div className="w-full max-w-[40px] bg-neutral-900 rounded-t-lg h-24 flex items-end overflow-hidden border border-white/5">
-                                            <div 
-                                                style={{ height: `${barHeight}%` }} 
+                                            <div
+                                                style={{ height: `${barHeight}%` }}
                                                 className="w-full bg-[#ecf542] group-hover:bg-white transition-all duration-300 rounded-t"
                                             />
                                         </div>
@@ -336,13 +485,14 @@ export default function EnterpriseDashboardConsole(): React.JSX.Element {
                     <div className="flex items-center justify-between border-b border-white/5 pb-4">
                         <h2 className="text-xs font-black tracking-widest uppercase text-[#ecf542]">Saved Telemetry Logs ({historyRecords.length})</h2>
                         {historyRecords.length > 0 && (
-                            <button 
-                                onClick={exportCsvReport}
+                            <button
+                                onClick={exportBrandedReport}
                                 className="bg-neutral-900 hover:bg-[#ecf542] text-[#ecf542] hover:text-black border border-white/10 px-3 py-1.5 rounded-lg font-mono text-[10px] font-black uppercase tracking-wider transition-colors cursor-pointer"
                             >
-                                Export CSV ↓
+                                Official Report 📄
                             </button>
                         )}
+
                     </div>
 
                     {historyRecords.length === 0 ? (
@@ -366,9 +516,9 @@ export default function EnterpriseDashboardConsole(): React.JSX.Element {
                                             <td className="py-3 px-4 text-neutral-400">{rec.createdAt}</td>
                                             <td className="py-3 px-4 text-white">
                                                 {editingId === rec.id ? (
-                                                    <input 
+                                                    <input
                                                         aria-label="Edit Weight"
-                                                        type="number" 
+                                                        type="number"
                                                         step="0.1"
                                                         value={editWeightValue}
                                                         onChange={(e) => setEditWeightValue(e.target.value)}
@@ -383,14 +533,14 @@ export default function EnterpriseDashboardConsole(): React.JSX.Element {
                                             <td className="py-3 px-4 text-neutral-300">{rec.status}</td>
                                             <td className="py-3 px-4 text-right space-x-3">
                                                 {editingId === rec.id ? (
-                                                    <button 
+                                                    <button
                                                         onClick={() => void saveUpdatedWeight(rec.id)}
                                                         className="text-emerald-400 hover:text-emerald-300 bg-transparent border-none cursor-pointer font-mono text-[10px] uppercase font-bold"
                                                     >
                                                         [ Save ]
                                                     </button>
                                                 ) : (
-                                                    <button 
+                                                    <button
                                                         onClick={() => {
                                                             setEditingId(rec.id);
                                                             setEditWeightValue(rec.weight.toString());
@@ -400,7 +550,7 @@ export default function EnterpriseDashboardConsole(): React.JSX.Element {
                                                         [ Edit ]
                                                     </button>
                                                 )}
-                                                <button 
+                                                <button
                                                     onClick={() => void deleteRecordProtocol(rec.id)}
                                                     className="text-red-500 hover:text-red-400 bg-transparent border-none cursor-pointer font-mono text-[10px] uppercase font-bold"
                                                 >
@@ -424,24 +574,24 @@ export default function EnterpriseDashboardConsole(): React.JSX.Element {
                                         Athlete Identity Console
                                     </h3>
                                 </div>
-                                <button 
-                                    onClick={() => setIsProfileModalOpen(false)} 
+                                <button
+                                    onClick={() => setIsProfileModalOpen(false)}
                                     className="text-neutral-300 hover:text-black hover:bg-[#ecf542] font-mono text-[11px] font-bold uppercase bg-neutral-800 border border-white/10 px-4 py-1.5 rounded-lg transition-all cursor-pointer"
                                 >
                                     Close ✕
                                 </button>
                             </div>
                             <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-6 flex justify-center items-start bg-neutral-950">
-                                <UserProfile 
-                                    routing="hash" 
-                                    appearance={{ 
-                                        elements: { 
-                                            rootBox: "w-full", 
-                                            cardBox: "w-full shadow-none border border-white/10 bg-neutral-900 rounded-xl", 
-                                            navbar: "bg-neutral-900 border-r border-white/5", 
-                                            pageScrollBox: "bg-transparent" 
-                                        } 
-                                    }} 
+                                <UserProfile
+                                    routing="hash"
+                                    appearance={{
+                                        elements: {
+                                            rootBox: "w-full",
+                                            cardBox: "w-full shadow-none border border-white/10 bg-neutral-900 rounded-xl",
+                                            navbar: "bg-neutral-900 border-r border-white/5",
+                                            pageScrollBox: "bg-transparent"
+                                        }
+                                    }}
                                 />
                             </div>
                         </div>
