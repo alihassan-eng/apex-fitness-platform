@@ -18,13 +18,13 @@ export const metadata: Metadata = {
         title: "Apex Fitness | Global Enterprise Platform",
         description: "Apex Fitness Goals - Ultra-performance high-grade global training companion built to Silicon Valley standards.",
         url: "https://apex-fitness-platform-beta.vercel.app/",
-        images: [{ url: "https://apex-fitness-platform-beta.vercel.applogo.jpg", width: 1200, height: 630, type: "image/jpeg" }]
+        images: [{ url: "https://apex-fitness-platform-beta.vercel.app/logo.jpg", width: 1200, height: 630, type: "image/jpeg" }]
     },
     twitter: {
         card: "summary_large_image",
         title: "Apex Fitness | Global Enterprise Platform",
         description: "Apex Fitness Goals - Ultra-performance high-grade global training companion built to Silicon Valley standards.",
-        images: ["https://apex-fitness-platform-beta.vercel.applogo.jpg"],
+        images: ["https://apex-fitness-platform-beta.vercel.app/logo.jpg"],
     }
 };
 
